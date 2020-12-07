@@ -6,21 +6,36 @@
 </head>
 
 <body>
-    <h1 id='word'>apple</h1>
-    <h2 id='translation'>苹果</h2>
-    <h3 id='note'>An apple costs a lot.</h3>
-    <input type="button" value="PLAY" onclick="play()">
-    <audio id="audio" src="https://www.collinsdictionary.com/us/sounds/hwd_sounds/en_us_apple_1.mp3"></audio>
-    <audio id="audio2" src="https://www.collinsdictionary.com/us/sounds/hwd_sounds/en_us_exa_his_ongoing_search_for_the_finest_varieties_of_apple.mp3"></audio>
+  <h1 id='word'>apple</h1>
+  <h2 id='translation'>苹果</h2>
+  <h3 id='note'>An apple costs a lot.</h3>
+  <input type="button" value="PLAY" onclick="play()">
+ 
+  <script>
+    var audio_list = [];
 
-    <script>
-        function play() {
-          var audio = document.getElementById("audio");
-          var audio2 = document.getElementById("audio2");
-          audio.play();
-          setTimeout(function(){ audio2.play(); }, audio.duration * 1000);
-        }
-      </script>
+    var audio = document.createElement('audio')
+    audio.src = "https://www.collinsdictionary.com/us/sounds/hwd_sounds/en_us_apple_1.mp3"
+    audio_list.push(audio)
+
+    var audio = document.createElement('audio')
+    audio.src = "https://www.collinsdictionary.com/us/sounds/hwd_sounds/en_us_exa_his_ongoing_search_for_the_finest_varieties_of_apple.mp3"
+    audio_list.push(audio)
+
+    function play_audio_list(audio_list, n) {
+      audio_list[n].play();
+      if(n < audio_list.length - 1){
+        setTimeout(function () { play_audio_list(audio_list, n+1); }, audio_list[n].duration * 1000);
+        // https://ourcodeworld.com/articles/read/1036/how-to-retrieve-the-duration-of-a-mp3-wav-audio-file-in-the-browser-with-javascript
+      }
+    }
+
+    function play() {
+      play_audio_list(audio_list, 0);
+    }
+
+      
+  </script>
 </body>
 
 </html>

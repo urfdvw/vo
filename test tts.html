@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+</head>
+
+<body>
+  <input type="button" value="PLAY" onclick="play()">
+
+  <script>
+    // 开启中文
+    var text_list = [['apple', '苹果'], ['banana', '香蕉']];
+
+    function play_text_list(text_list, n) {
+      // var utterThis = new SpeechSynthesisUtterance(text_list[n][0]);
+      var utterThis = new SpeechSynthesisUtterance(text_list[n][1]);
+      // utterThis.lang = 'en-US';
+      // utterThis.lang = 'zh-CN';
+      utterThis.lang = 'zh-TW';
+      // if (n < text_list.length - 1) {
+      //   utterThis.onend = function (event) {
+      //     play_text_list(text_list, n + 1);
+      //   }
+      // }
+      window.speechSynthesis.speak(utterThis);
+      play_text_list(text_list, n + 1);
+    }
+
+    function play() {
+      play_text_list(text_list, 0);
+    }
+
+
+  </script>
+</body>
+
+</html>
