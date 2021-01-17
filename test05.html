@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+</head>
+
+<body>
+    <input type="file"><br>
+    <button onclick="download_csv()">Download CSV</button>
+
+    <script>
+        /* data manage */
+        // data array
+        var data = []; 
+        // csv to array
+        function parseCSV(file, delimiter, callback) {
+            var reader = new FileReader();
+
+            // When the FileReader has loaded the file...
+            reader.onload = function () {
+
+                // Split the result to an array of lines
+                var lines = this.result.split('\n');
+
+                // Split the lines themselves by the specified
+                // delimiter, such as a comma
+                var result = lines.map(function (line) {
+                    return line.split(delimiter);
+                });
+
+                // As the FileReader reads asynchronously,
+                // we can't just return the result; instead,
+                // we're passing it to a callback function
+                callback(result);
+            }
+
+            // Read the file content as a single string
+            reader.readAsText(file);
+        }
+        document.querySelector('input[type="file"]')
+            .addEventListener('change', function () {
+                var files = this.files;
+
+                for (var i = 0; i < files.length; i++) {
+                    parseCSV(files[i], ',', function (result) {
+                        data = result;
+                    });
+                }
+            })
+        // array to csv
+        function download_csv() {
+            var csv = '';
+            data.forEach(function (row) {
+                csv += row.join(',');
+                csv += "\n";
+            });
+            var hiddenElement = document.createElement('a');
+            hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+            hiddenElement.target = '_blank';
+            hiddenElement.download = 'data.csv';
+            hiddenElement.click();
+        }
+    </script>
+</body>
+
+</html>

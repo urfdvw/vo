@@ -8,3 +8,10 @@
 
 # test04: JS download online file
 - [Example](https://code-maven.com/create-and-download-csv-with-javascript)
+
+# test05: upload csv to array
+- [Example](https://www.sitepoint.com/community/t/build-an-array-from-csv-file/234312/3)
+
+# test06: play csv list via tts
+- only word and translation, no notes
+- did not deal with not existsing words.
