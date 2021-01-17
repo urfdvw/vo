@@ -29,6 +29,9 @@
 
 # test10
 - sort function
+- list view
+- reset
+
 
 # TODO
 - bug fix
