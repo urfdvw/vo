@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        .row {
+            display: flex;
+        }
+
+        .column {
+            flex: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="row">
+        <div class="column">
+            <input id="word_new">Word<br>
+            <input id="translation_new">翻译<br>
+            <input id="example_new">Example<br>
+            <input id="note_new">注释<br>
+            <button onclick="add_word()">Add new word</button><br>
+        </div>
+        <div class="column">
+            <input type="file"><br>
+            <button onclick="download_csv()">Download CSV</button><br>
+            <input type="button" value="PLAY" onclick="play = true">
+            <input type="button" value="PAUSE" onclick="play = false"><br>
+            <input id="rate" value=1.0 onchange="rate = document.getElementById('rate').value">
+
+            <h1 id="word"></h1>
+            <h2 id="translation"></h2>
+            <h3 id="example"></h3>
+            <h4 id="note"></h4>
+        </div>
+    </div>
+
+
+    <script>
+        // 开启中文
+        /* data manage */
+        // data array
+        var data = []; // word, translation, example, Chinese Note, count, date
+        // input to array
+        function add_word() {
+            var word = document.getElementById('word_new').value;
+            var translation = document.getElementById('translation_new').value;
+            var example = document.getElementById('example_new').value;
+            var note = document.getElementById('note_new').value;
+            data.push([word, translation, example, note, 0, new Date()])
+        }
+        // sort
+        function sort_by_n() {
+            data.sort(function (a, b) {
+                if (parseInt(a[4]) > parseInt(b[4])) return 1;
+                if (parseInt(a[4]) < parseInt(b[4])) return -1;
+                return 0;
+            });
+        }
+        function sort_by_date() {
+            data.sort(function (a, b) {
+                if (new Date(a[5]) < new Date(b[5])) return 1;
+                if (new Date(a[5]) > new Date(b[5])) return -1;
+                return 0;
+            });
+        }
+        // csv to array
+        function parseCSV(file, delimiter, callback) {
+            var reader = new FileReader();
+
+            // When the FileReader has loaded the file...
+            reader.onload = function () {
+
+                // Split the result to an array of lines
+                var lines = this.result.trim().split('\n');
+
+                // Split the lines themselves by the specified
+                // delimiter, such as a comma
+                var result = lines.map(function (line) {
+                    return line.split(delimiter);
+                });
+
+                // As the FileReader reads asynchronously,
+                // we can't just return the result; instead,
+                // we're passing it to a callback function
+                callback(result);
+            }
+
+            // Read the file content as a single string
+            reader.readAsText(file);
+        }
+        document.querySelector('input[type="file"]')
+            .addEventListener('change', function () {
+                var files = this.files;
+
+                for (var i = 0; i < files.length; i++) {
+                    parseCSV(files[i], ',', function (result) {
+                        data = data.concat(result);
+                    });
+                }
+            })
+        // array to csv
+        function download_csv() {
+            var csv = '';
+            data.forEach(function (row) {
+                csv += row.join(',');
+                csv += "\n";
+            });
+            csv = csv.trim();
+            var hiddenElement = document.createElement('a');
+            hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+            hiddenElement.target = '_blank';
+            hiddenElement.download = 'data.csv';
+            hiddenElement.click();
+        }
+
+        /* Audio */
+        var language = ['en-US', 'zh-TW', 'en-US', 'zh-TW']; // 'zh-CN'
+        var id = ['word', 'translation', 'example', 'note'];
+        var rate = document.getElementById("rate").value;
+
+        var n = 0; // index of word
+        var i = 0; // index of item in the word
+        var utterThis;
+        function play_data() {
+            console.log("frame");
+            if (play & tictoc) {
+                console.log("a play");
+                tictoc = false;
+                if (data[n][i] === undefined) {
+                    text = "";
+                } else {
+                    text = data[n][i];
+                }
+                document.getElementById(id[i]).innerHTML = text;
+                utterThis = new SpeechSynthesisUtterance(text);
+                utterThis.lang = language[i];
+                utterThis.rate = rate;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterThis);
+                i += 1;
+                if (i >= 4) {
+                    data[n][4] = parseInt(data[n][4]) + 1; // count +1
+                    i = 0;
+                    n += 1;
+                }
+                utterThis.onend = function (event) {
+                    if (n < data.length) {
+                        if (i == 0) {
+                            for (var j = 0; j < 4; j++) {
+                                document.getElementById(id[j]).innerHTML = "";
+                            }
+                        }
+                        tictoc = true;
+                    }
+                };
+            }
+        }
+
+        var tictoc = true;
+        var play = false;
+        var interval = setInterval(play_data, 100);
+    </script>
+</body>
+
+</html>

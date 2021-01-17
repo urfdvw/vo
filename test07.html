@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+</head>
+
+<body>
+    <input type="file"><br>
+    <button onclick="download_csv()">Download CSV</button><br>
+    <input type="button" value="PLAY" onclick="play()">
+
+    <h1 id="word"></h1>
+    <h2 id="translation"></h2>
+    <h3 id="example"></h3>
+    <h4 id="note"></h4>
+
+    <script>
+        /* data manage */
+        // data array
+        var data = []; // word, translation, example, Chinese Note
+        // csv to array
+        function parseCSV(file, delimiter, callback) {
+            var reader = new FileReader();
+
+            // When the FileReader has loaded the file...
+            reader.onload = function () {
+
+                // Split the result to an array of lines
+                var lines = this.result.split('\n');
+
+                // Split the lines themselves by the specified
+                // delimiter, such as a comma
+                var result = lines.map(function (line) {
+                    return line.split(delimiter);
+                });
+
+                // As the FileReader reads asynchronously,
+                // we can't just return the result; instead,
+                // we're passing it to a callback function
+                callback(result);
+            }
+
+            // Read the file content as a single string
+            reader.readAsText(file);
+        }
+        document.querySelector('input[type="file"]')
+            .addEventListener('change', function () {
+                var files = this.files;
+
+                for (var i = 0; i < files.length; i++) {
+                    parseCSV(files[i], ',', function (result) {
+                        data = result;
+                    });
+                }
+            })
+        // array to csv
+        function download_csv() {
+            var csv = '';
+            data.forEach(function (row) {
+                csv += row.join(',');
+                csv += "\n";
+            });
+            var hiddenElement = document.createElement('a');
+            hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+            hiddenElement.target = '_blank';
+            hiddenElement.download = 'data.csv';
+            hiddenElement.click();
+        }
+
+        /* Audio */
+        var language = ['en-US', 'zh-TW', 'en-US', 'zh-TW']; // 'zh-CN'
+        var id = ['word', 'translation', 'example', 'note'];
+
+        var n = 0; // index of word
+        var i = 0; // index of item in the word
+        function play_text_list(text_list) {
+            if (text_list[n][i] === undefined) {
+                text = " ";
+            } else {
+                text = text_list[n][i];
+            }
+            var utterThis = new SpeechSynthesisUtterance(text);
+            document.getElementById(id[i]).innerHTML = text;
+            utterThis.lang = language[i];
+            window.speechSynthesis.speak(utterThis);
+            
+            utterThis.onend = function (event) {
+                // https://stackoverflow.com/a/58775876/7037749
+                window.speechSynthesis.cancel();
+                i += 1;
+                if (i >= 4) {
+                    i = 0;
+                    n += 1;
+                    for (var j = 0; j < 4; j++) {
+                        document.getElementById(id[j]).innerHTML = "";
+                    }
+                }
+                if (n < text_list.length) {
+                    play_text_list(text_list);
+                }
+            };
+        }
+
+        function play() {
+            play_text_list(data);
+        }
+    </script>
+</body>
+
+</html>
