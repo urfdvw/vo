@@ -34,10 +34,10 @@
             <input id="translation_new">翻译<br>
             <input id="example_new">Example<br>
             <input id="note_new">注释<br>
-            <button onclick="add_word()">Add new word</button><br>
+            <button onclick="add_word(); sort_by_date(); reset()">Add new word</button><br>
             <hr>
-            <button onclick="sort_by_n(), reset()">Least reviewed first</button><br>
-            <button onclick="sort_by_date(), reset()">Most recent first</button><br>
+            <button onclick="sort_by_n(); reset()">Least reviewed first</button><br>
+            <button onclick="sort_by_date(); reset()">Most recent first</button><br>
             <pre id="list"></pre>
         </div>
     </div>
@@ -166,8 +166,11 @@
             i = 0;
             for (var j = 0; j < 4; j++) {
                 document.getElementById(id[j]).innerHTML = "";
-
             }
+            document.getElementById('word_new').value = "";
+            document.getElementById('translation_new').value = "";
+            document.getElementById('example_new').value = "";
+            document.getElementById('note_new').value = "";
             disp_data();
         }
         var utterThis;
