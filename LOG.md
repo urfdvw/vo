@@ -24,10 +24,10 @@
 
 # test09
 - column
-- concat instead of change
+- `concat` instead of change
 - input interface
 
-# test10
+# test10: first review
 - sort function
 - list view
 - reset
@@ -40,10 +40,6 @@
         - https://stackoverflow.com/a/23808155/7037749
         - use Edge will solve it but it is very annoying
         - Fix it if time allows
-    - cannot out put chinese
-    - only word and translation, no notes
-    - did not deal with not existing words.
 - features
-    - add words
-    - word list
-    - windowed slide show
+    - pause to edit existing words
+    - comprehensive word list for management(with back end)
