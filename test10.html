@@ -50,10 +50,10 @@
         var data = []; // word, translation, example, Chinese Note, count, date
         // input to array
         function add_word() {
-            var word = document.getElementById('word_new').value.replace(',', '，');
-            var translation = document.getElementById('translation_new').value.replace(',', '，');
-            var example = document.getElementById('example_new').value.replace(',', '，');
-            var note = document.getElementById('note_new').value.replace(',', '，');
+            var word = document.getElementById('word_new').value.split(',').join('，');
+            var translation = document.getElementById('translation_new').value.split(',').join('，');
+            var example = document.getElementById('example_new').value.split(',').join('，');
+            var note = document.getElementById('note_new').value.split(',').join('，');
             data.push([word, translation, example, note, 0, new Date()])
         }
         // sort
@@ -182,7 +182,7 @@
                 if (data[n][i] === undefined) {
                     text = "";
                 } else {
-                    text = data[n][i].replace('，', ',');
+                    text = data[n][i].split('，').join(',');
                 }
                 document.getElementById(id[i]).innerHTML = text;
                 utterThis = new SpeechSynthesisUtterance(text);
