@@ -182,7 +182,7 @@
                 if (data[n][i] === undefined) {
                     text = "";
                 } else {
-                    text = data[n][i];
+                    text = data[n][i].replace('，', ',');
                 }
                 document.getElementById(id[i]).innerHTML = text;
                 utterThis = new SpeechSynthesisUtterance(text);
