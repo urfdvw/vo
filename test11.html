@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        .row {
+            display: flex;
+        }
+
+        .column {
+            flex: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="row">
+        <div class="column">
+            <input type="button" value="PLAY" onclick="play = true">
+            <input type="button" value="PAUSE" onclick="play = false">
+            <input type="button" value="RESET" onclick="reset()"><br>
+            <input id="rate" value=1.0 onchange="rate = document.getElementById('rate').value">
+            <hr>
+            <h1 id="word"></h1>
+            <h2 id="translation"></h2>
+            <h3 id="example"></h3>
+            <h4 id="note"></h4>
+        </div>
+        <div class="column">
+            <button id="inputfile"> Open </button>
+            <button id="save" onClick='save_csv()'> Save </button>
+            <text id="filename"></text>
+            <hr>
+            <input id="word_new">Word<br>
+            <input id="translation_new">翻译<br>
+            <input id="example_new">Example<br>
+            <input id="note_new">注释<br>
+            <button onclick="add_word(); sort_by_date(); reset()">Add new word</button><br>
+            <hr>
+            <button onclick="sort_by_n(); reset()">Least reviewed first</button><br>
+            <button onclick="sort_by_date(); reset()">Most recent first</button><br>
+            <pre id="list"></pre>
+        </div>
+    </div>
+
+
+    <script>
+        // 开启中文
+        /*
+         * file related
+         */
+
+        // file to text to array
+        var data = []; // word, translation, example, Chinese Note, count, date
+        let fileHandle;
+        var butOpenFile = document.getElementById("inputfile")
+        butOpenFile.addEventListener('click', async () => {
+            [fileHandle] = await window.showOpenFilePicker();
+            const file = await fileHandle.getFile();
+            var file_text = await file.text();
+            var lines = file_text.split('\n');
+            for (var i=0; i<lines.length; i++){
+                line_list = lines[i].split(',')
+                for(var j=0; j<line_list.length; j++){
+                    line_list[j] = line_list[j].trim()
+                }
+                data.push(line_list);
+            }
+            document.getElementById('filename').innerHTML = fileHandle.name;
+            disp_data();
+        });
+
+        async function writeFile(fileHandle, contents) {
+            // Create a FileSystemWritableFileStream to write to.
+            const writable = await fileHandle.createWritable();
+            // Write the contents of the file to the stream.
+            await writable.write(contents);
+            // Close the file and write the contents to disk.
+            await writable.close();
+        }
+
+        // data to csv to file
+        function save_csv(cm) {
+            var csv = '';
+            data.forEach(function (row) {
+                csv += row.join(',');
+                csv += "\n";
+            });
+            csv = csv.trim();
+            writeFile(fileHandle, csv);
+        }
+
+        /* 
+         * data manage 
+         */
+        // input to array
+        function add_word() {
+            var word = document.getElementById('word_new').value.split(',').join('，');
+            var translation = document.getElementById('translation_new').value.split(',').join('，');
+            var example = document.getElementById('example_new').value.split(',').join('，');
+            var note = document.getElementById('note_new').value.split(',').join('，');
+            data.push([word, translation, example, note, 0, new Date()])
+        }
+        // sort
+        function shuffle(array) {
+            // https://stackoverflow.com/a/2450976/7037749
+            var currentIndex = array.length, temporaryValue, randomIndex;
+
+            // While there remain elements to shuffle...
+            while (0 !== currentIndex) {
+
+                // Pick a remaining element...
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex -= 1;
+
+                // And swap it with the current element.
+                temporaryValue = array[currentIndex];
+                array[currentIndex] = array[randomIndex];
+                array[randomIndex] = temporaryValue;
+            }
+
+            return array;
+        }
+        function sort_by_n() {
+            data = shuffle(data);
+            data.sort(function (a, b) {
+                if (parseInt(a[4]) > parseInt(b[4])) return 1;
+                if (parseInt(a[4]) < parseInt(b[4])) return -1;
+                return 0;
+            });
+        }
+        function sort_by_date() {
+            data = shuffle(data);
+            data.sort(function (a, b) {
+                if (new Date(a[5]) < new Date(b[5])) return 1;
+                if (new Date(a[5]) > new Date(b[5])) return -1;
+                return 0;
+            });
+        }
+        // display
+        function disp_data() {
+            var text = '';
+            data.forEach(function (row) {
+                text += row[0] + ',' + row[1] + ',' + row[4];
+                text += "\n";
+            });
+            document.getElementById('list').innerHTML = text;
+        }
+
+        /* 
+         * Audio 
+         */
+        var language = ['en-US', 'zh-TW', 'en-US', 'zh-TW']; // 'zh-CN'
+        var id = ['word', 'translation', 'example', 'note'];
+        var rate = document.getElementById("rate").value;
+
+        var n = 0; // index of word
+        var i = 0; // index of item in the word
+
+        function reset() {
+            play = false;
+            n = 0;
+            i = 0;
+            for (var j = 0; j < 4; j++) {
+                document.getElementById(id[j]).innerHTML = "";
+            }
+            document.getElementById('word_new').value = "";
+            document.getElementById('translation_new').value = "";
+            document.getElementById('example_new').value = "";
+            document.getElementById('note_new').value = "";
+            disp_data();
+        }
+        var utterThis;
+        function play_data() {
+            console.log("frame");
+            if (play & tictoc) {
+                console.log("a play");
+                tictoc = false;
+                if (data[n][i] === undefined) {
+                    text = "";
+                } else {
+                    text = data[n][i].split('，').join(',');
+                }
+                document.getElementById(id[i]).innerHTML = text;
+                utterThis = new SpeechSynthesisUtterance(text);
+                utterThis.lang = language[i];
+                utterThis.rate = rate;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterThis);
+                i += 1;
+                if (i >= 4) {
+                    data[n][4] = parseInt(data[n][4]) + 1; // count +1
+                    i = 0;
+                    n += 1;
+                }
+                utterThis.onend = function (event) {
+                    if (n < data.length) {
+                        if (i == 0) {
+                            for (var j = 0; j < 4; j++) {
+                                document.getElementById(id[j]).innerHTML = "";
+                            }
+                            disp_data();
+                        }
+                        tictoc = true;
+                    }
+                };
+            }
+        }
+
+        var tictoc = true;
+        var play = false;
+        var interval = setInterval(play_data, 100);
+    </script>
+</body>
+
+</html>
